@@ -1,0 +1,4 @@
+*.pyc
+Imagenet-2012
+tf_models
+tf_models/*
