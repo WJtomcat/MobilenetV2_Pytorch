@@ -2,6 +2,7 @@ import tensorflow as tf
 from collections import OrderedDict
 
 from mobilenetv2 import Mobilenetv2
+import torch
 
 model_name = './tf_models/mobilenet_v2_1.0_224.ckpt'
 
@@ -55,7 +56,8 @@ dummy_replace = OrderedDict([
     ('/Conv/BatchNorm', 'bn1'),
     ('/Conv', 'conv1'),
     ('/weights', '.weight'),
-    ('/Logits')
+    ('/Logitsconv12d_1c_1x1/biases', 'connect.bias'),
+    ('/Logitsconv12d_1c_1x1.weight', 'connect.weight')
 ])
 for a, b in dummy_replace.items():
     for k in list(var_dict.keys()):
@@ -63,11 +65,36 @@ for a, b in dummy_replace.items():
             var_dict[k.replace(a,b)] = var_dict[k]
             del var_dict[k]
 
-# for k in list(var_dict.keys()):
-#   print(k)
+for k in list(var_dict.keys()):
+  if 'connect' in k:
+    print(k)
 
 model = Mobilenetv2()
 x = model.state_dict()
 
 print(set(var_dict.keys()) - set(x.keys()))
 print(set(x.keys()) - set(var_dict.keys()))
+
+assert len(set(x.keys()) - set(var_dict.keys())) == 0
+
+for k in list(var_dict.keys()):
+  if var_dict[k].ndim == 4:
+    if '.conv2' in k:
+      var_dict[k] = var_dict[k].transpose((2, 3, 0, 1)).copy(order='C')
+    else:
+      var_dict[k] = var_dict[k].transpose((3, 2, 0, 1)).copy(order='C')
+  if var_dict[k].ndim == 2:
+    var_dict[k] = var_dict[k].transpose((1, 0)).copy(order='C')
+  if x[k].shape != var_dict[k].shape:
+    print(k)
+    print(x[k].shape)
+    print(var_dict[k].shape)
+
+
+
+for k in list(var_dict.keys()):
+  var_dict[k] = torch.from_numpy(var_dict[k])
+  # print(var_dict[k])
+
+
+# torch.save(var_dict, 'mobilenetv2.pth')

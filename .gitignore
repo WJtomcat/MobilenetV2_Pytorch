@@ -2,3 +2,9 @@
 Imagenet-2012
 tf_models
 tf_models/*
+*.pth
+events.*
+./slim_log
+./slim_log/*
+./tmp
+./tmp/*
