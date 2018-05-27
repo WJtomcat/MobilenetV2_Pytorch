@@ -63,6 +63,7 @@ class Mobilenetv2(nn.Module):
     self.layers = self._make_layers(in_planes=32)
     self.conv2 = nn.Conv2d(320, 1280, kernel_size=1, stride=1, padding=0, bias=False)
     self.bn2 = nn.BatchNorm2d(1280)
+    # self.dropout = nn.Dropout2d(p=0.8)
     self.connect = nn.Conv2d(1280, num_classes, kernel_size=1, bias=True)
 
   def _make_layers(self, in_planes):
@@ -81,6 +82,7 @@ class Mobilenetv2(nn.Module):
 
     out = F.avg_pool2d(out, 7)
     # out = out.view(out.size(0), -1)
+    # out = self.dropout(out)
     out = self.connect(out)
     out = out.squeeze(3).squeeze(2)
     # return F.log_softmax(out, dim=1)

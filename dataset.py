@@ -12,8 +12,8 @@ import conf
 
 traindir = os.path.join(conf.dataset_dir, 'train')
 valdir = os.path.join(conf.dataset_dir, 'val')
-normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                 std=[0.458, 0.448, 0.450])
+normalize = transforms.Normalize(mean=[0.5, 0.5, 0.5],
+                                 std=[0.5, 0.5, 0.5])
 
 def train_loader():
   train_dataset = datasets.ImageFolder(
@@ -25,7 +25,8 @@ def train_loader():
           normalize,
       ]))
   return torch.utils.data.DataLoader(train_dataset,
-      batch_size=conf.train_batch_size, shuffle=True)
+      batch_size=conf.train_batch_size, shuffle=True,
+      num_workers=4, pin_memory=True)
 
 def val_loader():
   val_dataset = datasets.ImageFolder(
@@ -36,7 +37,10 @@ def val_loader():
           transforms.ToTensor(),
           normalize,
       ]))
-  return torch.utils.data.DataLoader(val_dataset, batch_size=conf.val_batch_size, shuffle=True)
+  return torch.utils.data.DataLoader(val_dataset,
+                                     batch_size=conf.val_batch_size,
+                                     shuffle=True,
+                                     num_workers=4)
 
 if __name__ == '__main__':
   val_dataset = val_loader()
